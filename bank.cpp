@@ -1,4 +1,3 @@
-// mini_bank_no_overdraft.cpp
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -92,12 +91,12 @@ struct Checking : Account {
 	Checking(int i, string o, double init)
 		: Account(i, o, init) {
 	}
-	// No overdraft — use base withdraw behavior
+
 };
 
 struct Bank {
 	unordered_map<int, unique_ptr<Account>> a;
-	vector<Tx> log; // global log for undo
+	vector<Tx> log;
 	int next = 1;
 
 	int createChecking(string owner, double init = 0) {
@@ -140,7 +139,7 @@ struct Bank {
 	bool undo(string& err) {
 		if (log.empty()) { err = "nothing to undo"; return false; }
 		Tx last = log.back();
-		// check transfer pair
+
 		if (last.type == TxType::TransferIn && log.size() >= 2) {
 			Tx prev = log[log.size() - 2];
 			if (prev.type == TxType::TransferOut && prev.amt == last.amt) {
@@ -156,7 +155,7 @@ struct Bank {
 				catch (exception& e) { err = e.what(); return false; }
 			}
 		}
-		// single undo
+
 		try {
 			if (last.type == TxType::Deposit || last.type == TxType::TransferIn) {
 				acc(last.acc).withdraw(last.amt, "undo");
@@ -173,10 +172,10 @@ struct Bank {
 
 int main() {
 	ios::sync_with_stdio(false);
-	cin.tie(nullptr);
+	cin.tie(&cout);
 
 	Bank bank;
-	cout << "Mini bank (no overdraft) interactive\n";
+	cout << "Mini bank\n";
 
 	while (true) {
 		cout << "\nMenu:\n"
@@ -188,43 +187,79 @@ int main() {
 			<< "\t6 Print account\n"
 			<< "\t7 Undo last\n"
 			<< "\t0 Exit\n"
-			<< "Choose: ";
+			<< "Choose: " << flush;
+
 		int cmd;
-		if (!(cin >> cmd)) break;
+		if (!(cin >> cmd)) {
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "Iz menu vblbirai\n";
+			continue;
+		}
+
+		//на случай, если ввёли число и пробелы
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 		try {
 			if (cmd == 1) {
 				string name;
 				double init;
-				cout << "Owner: ";
-				cin >> ws;
+				cout << "Owner: " << flush;
 				getline(cin, name);
-				cout << "Initial: ";
-				cin >> init;
+				if (name.empty()) {
+					cout << "Name can't be hollow es4o\n";
+					continue;
+				}
+				cout << "Initial: " << flush;
+				if (!(cin >> init)) {
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					cout << "Incorrect\n";
+					continue;
+				}
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				int id = bank.createChecking(name, init);
 				cout << "Created checking id=" << id << "\n";
 			}
 			else if (cmd == 2) {
 				int id;
 				double v;
-				cout << "acc id, amount: ";
-				cin >> id >> v;
+				cout << "acc id, amount: " << flush;
+				if (!(cin >> id >> v)) {
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					cout << "Incorrect vvod\n";
+					continue;
+				}
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				bank.deposit(id, v, "manual");
 				cout << "OK\n";
 			}
 			else if (cmd == 3) {
 				int id;
 				double v;
-				cout << "acc id, amount: ";
-				cin >> id >> v;
+				cout << "acc id, amount: " << flush;
+				if (!(cin >> id >> v)) {
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					cout << "Ne\n";
+					continue;
+				}
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				bank.withdraw(id, v, "manual");
 				cout << "OK\n";
 			}
 			else if (cmd == 4) {
 				int a, b;
 				double v;
-				cout << "from to amount: ";
-				cin >> a >> b >> v;
+				cout << "from to amount: " << flush;
+				if (!(cin >> a >> b >> v)) {
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					cout << "Ne\n";
+					continue;
+				}
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				bank.transfer(a, b, v, "manual");
 				cout << "OK\n";
 			}
@@ -233,8 +268,14 @@ int main() {
 			}
 			else if (cmd == 6) {
 				int id;
-				cout << "acc id: ";
-				cin >> id;
+				cout << "acc id: " << flush;
+				if (!(cin >> id)) {
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					cout << "inncrorrect \n";
+					continue;
+				}
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				bank.acc(id).print();
 			}
 			else if (cmd == 7) {
@@ -247,7 +288,7 @@ int main() {
 				break;
 			}
 			else {
-				cout << "Unknown\n";
+				cout << "4e\n";
 			}
 		}
 		catch (exception& e) {
